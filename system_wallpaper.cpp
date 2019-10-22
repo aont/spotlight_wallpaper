@@ -51,7 +51,8 @@ int _cdecl wmain(int argc, LPCWSTR argv[]) {
         return -__LINE__;
     }
 
-    wprintf(L"%s", wallpaper);
+    fwrite(wallpaper, wcslen(wallpaper)*sizeof(WCHAR), 1, stdout);
+    printf("\n");
 
     return 0;
 }
