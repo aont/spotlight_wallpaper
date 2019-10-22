@@ -33,9 +33,10 @@ def main():
     # params['time'] = '2017-12-31T23:59:59Z'
     
     sess = requests.session()
-    for i in range(1):
+    for i in range(32):
         # date_i -= datetime.timedelta(hours=i)
         # params['time'] = date_i.strftime("%Y-%m-%dT%H:%M:%SZ")
+        sys.stderr.write("[info] i=%s\n" % i)
         show_spotlight_url(sess, params)
         #time.sleep(120)
 
@@ -76,7 +77,7 @@ def show_spotlight_url(sess, params):
         # print(ad.get("hs2_title_text").get('tx'))
         # print(ad.get("hs2_cta_text").get('tx'))
 
-        for i in [1]:
+        for i in [1]: # do not change
 
             landscape_key = "image_fullscreen_%03d_landscape" % i
             # landscape_key = "image_fullscreen_%03d_portrait" % i
