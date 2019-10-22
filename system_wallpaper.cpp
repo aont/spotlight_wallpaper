@@ -4,6 +4,10 @@
 #include <cstdio>
 #include <cstdlib>
 
+#ifndef DLLAPI
+  #define DLLAPI extern "C" __declspec(dllexport)
+#endif
+
 // ref: https://matthewvaneerde.wordpress.com/2012/10/10/changing-the-desktop-wallpaper-using-idesktopwallpaper/
 
 class CoUninitializeOnExit {
@@ -20,12 +24,12 @@ private:
     IUnknown *m_p;
 };
 
-int _cdecl wmain(int argc, LPCWSTR argv[]) {
+DLLAPI LPWSTR system_wallpaper() {
     
     HRESULT hr = CoInitialize(NULL);
     if (FAILED(hr)) {
         fprintf(stderr, "[error] CoInitialize returned 0x%08x", hr);
-        return -1;
+        return NULL;
     }
     CoUninitializeOnExit cuoe;
 
@@ -33,7 +37,7 @@ int _cdecl wmain(int argc, LPCWSTR argv[]) {
     hr = CoCreateInstance(__uuidof(DesktopWallpaper), NULL, CLSCTX_ALL, IID_PPV_ARGS(&pDesktopWallpaper));
     if (FAILED(hr)) {
         fprintf(stderr, "[error] CoCreateInstance(__uuidof(DesktopWallpaper)) returned 0x%08x", hr);
-        return -1;
+        return NULL;
     }
     ReleaseOnExit releaseDesktopWallpaper((IUnknown*)pDesktopWallpaper);
     
@@ -42,32 +46,36 @@ int _cdecl wmain(int argc, LPCWSTR argv[]) {
     hr = pDesktopWallpaper->GetMonitorDevicePathAt(0, &monitorID);
     if(hr!=S_OK) {
         fprintf(stderr, "[error] IDesktopWallpaper::GetMonitorDevicePathAt returned 0x%08x", hr);
-        return -1;
+        return NULL;
     }
 
     LPWSTR wallpaper_wcs;
     hr = pDesktopWallpaper->GetWallpaper(monitorID, &wallpaper_wcs);
     if (hr!=S_OK) {
         fprintf(stderr, "[error] IDesktopWallpaper::GetWallpaper returned 0x%08x", hr);
-        return -1;
+        return NULL;
     }
 
-    int const wcs_len = wcslen(wallpaper_wcs);
-    // int mbs_len = wcs_len*sizeof(WCHAR);
-    int const mbs_len = WideCharToMultiByte(0, 0, wallpaper_wcs, wcs_len, NULL, 0, NULL, NULL);
-    if ( mbs_len==0 ) {
-        fprintf(stderr, "[error] WideCharToMultiByte failed\n");
-        return -1;
-    }
-    char* wallpaper_mbs = (char*)malloc(mbs_len);
-    int const ret = WideCharToMultiByte(0, 0, wallpaper_wcs, wcs_len, wallpaper_mbs, mbs_len, NULL, NULL);
-    if ( ret==0 ) {
-        fprintf(stderr, "[error] WideCharToMultiByte failed\n");
-        return -1;
-    }
+    return wallpaper_wcs;
 
-    // fwrite(wallpaper_mbs, mbs_len, 1, stdout);
-    printf("%s\n", wallpaper_mbs);
-    free(wallpaper_mbs);
-    return 0;
+    // int const wcs_len = wcslen(wallpaper_wcs);
+    // // int mbs_len = wcs_len*sizeof(WCHAR);
+    // int const mbs_len = WideCharToMultiByte(0, 0, wallpaper_wcs, wcs_len, NULL, 0, NULL, NULL);
+    // if ( mbs_len==0 ) {
+    //     fprintf(stderr, "[error] WideCharToMultiByte failed\n");
+    //     return NULL;
+    // }
+    // char* wallpaper_mbs = (char*)malloc(mbs_len);
+    // int const ret = WideCharToMultiByte(0, 0, wallpaper_wcs, wcs_len, wallpaper_mbs, mbs_len, NULL, NULL);
+    // if ( ret==0 ) {
+    //     fprintf(stderr, "[error] WideCharToMultiByte failed\n");
+    //     return NULL;
+    // }
+
+    // // fwrite(wallpaper_mbs, mbs_len, 1, stdout);
+    // printf("%s\n", wallpaper_mbs);
+    // free(wallpaper_mbs);
+
+    // fprintf(stderr, "acp: %u\n", GetACP());
+    // return 0;
 }
